@@ -9,7 +9,7 @@ import (
 )
 
 func TestFilter_Set(t *testing.T) {
-	id := func(n, k uint, v int) uint {
+	id := func(k uint, v int) uint {
 		return uint(v)
 	}
 	f := New(1, id)
@@ -66,7 +66,7 @@ func TestFilter_Set(t *testing.T) {
 }
 
 func TestFilter_Exists(t *testing.T) {
-	id := func(n, k uint, v int) uint {
+	id := func(k uint, v int) uint {
 		return uint(v)
 	}
 	f := New(1, id)
@@ -133,7 +133,7 @@ func TestFilter_Exists(t *testing.T) {
 func Test_bloomFilter(t *testing.T) {
 	b := make([]byte, 256)
 
-	h := func(n, k uint, v string) uint {
+	h := func(k uint, v string) uint {
 		h := sha1.New()
 		_, err := io.WriteString(h, v)
 		if err != nil {
@@ -142,7 +142,7 @@ func Test_bloomFilter(t *testing.T) {
 		r := h.Sum(nil)
 		buf := bytes.NewBuffer(r)
 		x, _ := binary.ReadUvarint(buf)
-		return uint(x) % n
+		return uint(x)
 	}
 	f := New(1, h)
 
