@@ -28,25 +28,21 @@ func New[T any](k uint, f HashFunc[T]) BloomFilter[T] {
 }
 
 // Set updates `b` as bit array by hashing for `v`.
-func (f *BloomFilter[T]) Set(b []byte, v T) { update(b, f.k, f.f, v) }
-
-// Test returns true if `b` as bit array contains the result of hashing for `v`.
-func (f *BloomFilter[T]) Test(b []byte, v T) bool { return filter(b, f.k, f.f, v) }
-
-func update[T any](b []byte, k uint, f HashFunc[T], v T) {
+func (f *BloomFilter[T]) Set(b []byte, v T) {
 	n := uint(len(b)) * 8
-	for i := uint(0); i < k; i++ {
-		h := f(i, v) % n
+	for i := uint(0); i < f.k; i++ {
+		h := f.f(i, v) % n
 		col := h % 8
 		row := h / 8
 		b[row] |= 1 << (7 - col)
 	}
 }
 
-func filter[T any](b []byte, k uint, f HashFunc[T], v T) bool {
+// Test returns true if `b` as bit array contains the result of hashing for `v`.
+func (f *BloomFilter[T]) Test(b []byte, v T) bool {
 	n := uint(len(b)) * 8
-	for i := uint(0); i < k; i++ {
-		h := f(i, v) % n
+	for i := uint(0); i < f.k; i++ {
+		h := f.f(i, v) % n
 		col := h % 8
 		row := h / 8
 		if (b[row]>>(7-col))&1 == 0 {
