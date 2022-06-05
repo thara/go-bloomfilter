@@ -8,10 +8,12 @@ import (
 	"testing"
 )
 
-func Test_update(t *testing.T) {
+func TestFilter_Set(t *testing.T) {
 	id := func(n, k uint, v int) uint {
 		return uint(v)
 	}
+	f := New(1, id)
+
 	tests := []struct {
 		name string
 		b    []byte
@@ -51,7 +53,7 @@ func Test_update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			update(tt.b, 1, id, tt.v)
+			f.Set(tt.b, tt.v)
 
 			for i, got := range tt.b {
 				if got != tt.want[i] {
@@ -63,10 +65,11 @@ func Test_update(t *testing.T) {
 
 }
 
-func Test_filter(t *testing.T) {
+func TestFilter_Exists(t *testing.T) {
 	id := func(n, k uint, v int) uint {
 		return uint(v)
 	}
+	f := New(1, id)
 
 	tests := []struct {
 		name string
@@ -119,7 +122,7 @@ func Test_filter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := filter(tt.b, 1, id, tt.v)
+			got := f.Test(tt.b, tt.v)
 			if got != tt.want {
 				t.Fatalf("want %v, but %v:", tt.want, got)
 			}
@@ -141,16 +144,12 @@ func Test_bloomFilter(t *testing.T) {
 		x, _ := binary.ReadUvarint(buf)
 		return uint(x) % n
 	}
+	f := New(1, h)
 
-	update(b, 1, h, "abc")
-	update(b, 1, h, "xxx")
-	update(b, 1, h, "yyy")
-	update(b, 1, h, "zzz")
-
-	got := filter(b, 1, h, "abc")
-	if got != true {
-		t.Fatalf("want %v, but %v:", true, got)
-	}
+	f.Set(b, "abc")
+	f.Set(b, "xxx")
+	f.Set(b, "yyy")
+	f.Set(b, "zzz")
 
 	tests := []struct {
 		name string
@@ -185,7 +184,7 @@ func Test_bloomFilter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := filter(b, 1, h, tt.v)
+			got := f.Test(b, tt.v)
 			if got != tt.want {
 				t.Fatalf("want %v, but %v:", tt.want, got)
 			}

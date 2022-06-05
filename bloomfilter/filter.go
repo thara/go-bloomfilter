@@ -1,10 +1,23 @@
 package bloomfilter
 
-type Bits []byte
-
 type HashFunc[T any] func(n, k uint, v T) uint
 
-func update[T any](b Bits, k uint, f HashFunc[T], v T) {
+type BloomFilter[T any] struct {
+	k uint
+	f HashFunc[T]
+}
+
+func New[T any](k uint, f HashFunc[T]) BloomFilter[T] {
+	return BloomFilter[T]{
+		k: k,
+		f: f,
+	}
+}
+
+func (f *BloomFilter[T]) Set(b []byte, v T)       { update(b, f.k, f.f, v) }
+func (f *BloomFilter[T]) Test(b []byte, v T) bool { return filter(b, f.k, f.f, v) }
+
+func update[T any](b []byte, k uint, f HashFunc[T], v T) {
 	n := uint(len(b))
 	for i := uint(0); i < k; i++ {
 		h := f(n, i, v)
